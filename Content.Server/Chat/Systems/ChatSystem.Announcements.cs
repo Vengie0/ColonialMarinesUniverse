@@ -1,3 +1,4 @@
+using Content.Server.CMU14.Chat; // CMU14
 using Content.Shared.Chat;
 using Content.Shared.Database;
 using Content.Shared.Station.Components;
@@ -9,19 +10,26 @@ namespace Content.Server.Chat.Systems;
 
 public sealed partial class ChatSystem
 {
+    [Dependency] private CMUApolloAnnouncementSystem _colonyAnnouncements = default!; // CMU14
+
     /// <inheritdoc />
     public override void DispatchGlobalAnnouncement(
         string message,
         string? sender = null,
         bool playSound = true,
         SoundSpecifier? announcementSound = null,
-        Color? colorOverride = null
+        Color? colorOverride = null,
+        bool useColonyLanguage = true // CMU14
         )
     {
         sender ??= Loc.GetString("chat-manager-sender-announcement");
 
-        var wrappedMessage = Loc.GetString("chat-manager-sender-announcement-wrap-message", ("sender", sender), ("message", FormattedMessage.EscapeText(message)));
-        _chatManager.ChatMessageToAll(ChatChannel.Radio, message, wrappedMessage, default, false, true, colorOverride);
+        // CMU14 Begin: in-world broadcasts use the current colony's language.
+        if (useColonyLanguage)
+            SendColonyAnnouncement(Filter.Broadcast(), message, sender, null, colorOverride);
+        else
+            _chatManager.ChatMessageToAll(ChatChannel.Radio, message, WrapAnnouncement(message, sender), default, false, true, colorOverride);
+        // CMU14 End
         if (playSound)
         {
             _audio.PlayGlobal(announcementSound ?? DefaultAnnouncementSound, Filter.Broadcast(), true, AudioParams.Default.WithVolume(-2f));
@@ -41,8 +49,7 @@ public sealed partial class ChatSystem
     {
         sender ??= Loc.GetString("chat-manager-sender-announcement");
 
-        var wrappedMessage = Loc.GetString("chat-manager-sender-announcement-wrap-message", ("sender", sender), ("message", FormattedMessage.EscapeText(message)));
-        _chatManager.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, wrappedMessage, source ?? default, false, true, colorOverride);
+        SendColonyAnnouncement(filter, message, sender, source, colorOverride); // CMU14
         if (playSound)
         {
             _audio.PlayGlobal(announcementSound ?? DefaultAnnouncementSound, filter, true, AudioParams.Default.WithVolume(-2f));
@@ -61,7 +68,6 @@ public sealed partial class ChatSystem
     {
         sender ??= Loc.GetString("chat-manager-sender-announcement");
 
-        var wrappedMessage = Loc.GetString("chat-manager-sender-announcement-wrap-message", ("sender", sender), ("message", FormattedMessage.EscapeText(message)));
         var station = _stationSystem.GetOwningStation(source);
 
         if (station == null)
@@ -74,7 +80,7 @@ public sealed partial class ChatSystem
 
         var filter = _stationSystem.GetInStation(stationDataComp);
 
-        _chatManager.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, wrappedMessage, source, false, true, colorOverride);
+        SendColonyAnnouncement(filter, message, sender, source, colorOverride); // CMU14
 
         if (playDefaultSound)
         {
@@ -83,4 +89,11 @@ public sealed partial class ChatSystem
 
         _adminLogger.Add(LogType.Chat, LogImpact.Low, $"Station Announcement on {station} from {sender}: {message}");
     }
+    // CMU14 methods: preserve the normal header and escape announcement text.
+    private void SendColonyAnnouncement(Filter filter, string message, string sender, EntityUid? source, Color? color)
+        => _colonyAnnouncements.SendChat(filter, message, heard => WrapAnnouncement(heard, sender), source, color);
+
+    private string WrapAnnouncement(string message, string sender)
+        => Loc.GetString("chat-manager-sender-announcement-wrap-message", ("sender", sender),
+            ("message", FormattedMessage.EscapeText(message)));
 }

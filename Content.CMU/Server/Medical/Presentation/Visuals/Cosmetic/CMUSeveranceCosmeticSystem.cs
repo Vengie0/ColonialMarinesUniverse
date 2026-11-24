@@ -33,6 +33,7 @@ public sealed partial class CMUSeveranceCosmeticSystem : EntitySystem
     [Dependency] private ThrowingSystem _throwing = default!;
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private BodyPartSeveranceSystem _severance = default!;
+    [Dependency] private CMUProstheticLimbTraitSystem _prostheticTraits = default!;
     [Dependency] private SharedCMUOpenStumpSystem _stumps = default!;
     [Dependency] private CMULegSupportSystem _legSupport = default!;
     [Dependency] private SharedContainerSystem _container = default!;
@@ -186,8 +187,10 @@ public sealed partial class CMUSeveranceCosmeticSystem : EntitySystem
             _deferredLegSever.Enqueue(new DeferredLegSever(ent.Owner));
         else if (partType == BodyPartType.Foot)
         {
-            UnequipAndFling(ent.Owner, "shoes");
-            // losing a foot puts you on the floor same as losing the leg
+            if (!_prostheticTraits.IsDetachingLegForReplacement(ent.Owner))
+                UnequipAndFling(ent.Owner, "shoes");
+
+            // If the replacement fails and the foot stays missing, the deferred check still drops the shoes.
             _deferredLegSever.Enqueue(new DeferredLegSever(ent.Owner));
         }
 

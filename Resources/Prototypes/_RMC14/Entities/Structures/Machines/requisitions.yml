@@ -327,7 +327,7 @@
         showEnts: False
         occludes: True
   - type: AccessReader
-    access: [ [ "CMAccessRequisitions" ], [ "CMAccessColonyCommand" ] ]
+    access: [ [ "CMAccessRequisitions" ], [ "CMAccessColonyCommand" ], [ "CMUAccessColonyASRS" ] ] # CMU14: grantable colony-only ASRS access
   - type: RequisitionsComputer
     faction: colony
 

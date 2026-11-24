@@ -28,6 +28,7 @@ cmu-id-job-opfor-security = Military Police
 cmu-id-job-opfor-command-no-logistics = Officer
 cmu-id-job-opfor-command = Command
 cmu-id-access-category-colony = Colony Access
+cmu-id-access-colony-asrs = Colony ASRS
 cmu-id-access-category-colony-leadership = Colony Leadership
 cmu-id-job-colony-admin = Colony Administrator
 cmu-id-job-colony-headsofcolony = Head of Department

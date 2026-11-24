@@ -221,6 +221,15 @@
     - FactionCMB
 
 - type: entity
+  parent: AU14IDCardColonyAdministrator
+  id: CMUSpareColonyAdministratorID
+  suffix: Spare
+  components:
+  - type: PresetIdCard
+    job: AU14JobCivilianColonyAdministrator
+    name: Spare ID
+
+- type: entity
   parent: AU14IDCardBaseCivilianNoIFF
   id: AU14IDCardColonyCorporateLiaison
   name: corporate liaison ID card

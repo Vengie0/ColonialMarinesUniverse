@@ -13,7 +13,7 @@ namespace Content.Server.CMU14.ColonyEconomy;
 public sealed partial class BudgetConsoleSystem : EntitySystem
 {
     private static readonly EntProtoId CashPrototype = "RMCSpaceCash";
-    public const float WithdrawalLimit = 3000;
+    public const float WithdrawalLimit = 10000;
     public static readonly TimeSpan WithdrawalCooldown = TimeSpan.FromMinutes(30);
 
     [Dependency] private UserInterfaceSystem _ui = default!;

@@ -67514,6 +67514,10 @@ entities:
   entities:
   - uid: 320217
     components:
+    - type: StorageFill
+      contents:
+      - id: CMUSpareColonyAdministratorID
+      - id: CMUReplacementColonyIDs
     - type: Transform
       pos: -6.5,78.5
       parent: 1

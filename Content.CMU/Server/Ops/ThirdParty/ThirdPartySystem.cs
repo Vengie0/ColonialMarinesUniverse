@@ -4,13 +4,13 @@ using Content.Server.CMU14.Language;
 using System.Linq;
 using System.Numerics;
 using Content.Server.Access.Systems;
+using Content.Server.CMU14.Chat;
 using Content.Server.CMU14.Diagnostics.Performance;
 using Content.Server.CMU14.Dropship.MultiDeck;
 using Content.Server.CMU14.Round;
 using Content.Server.CMU14.Threats;
 using Content.Server.CMU14.VendorMarker;
 using Content.Server.Chat.Systems;
-using Content.Shared.Chat;
 using Content.Server.GameTicking;
 using Content.Server.GameTicking.Presets;
 using Content.Server.CMU14.Roles; // CMU14
@@ -68,6 +68,7 @@ public sealed partial class ThirdPartySystem : EntitySystem
     [Dependency] private SharedBuckleSystem _buckle = default!;
     [Dependency] private MultiDeckDropshipSystem _multiDeck = default!;
     [Dependency] private ChatSystem _chat = default!;
+    [Dependency] private CMUApolloAnnouncementSystem _announcements = default!;
     [Dependency] private Content.Server.Chat.Managers.IChatManager _chatManager = default!;
     [Dependency] private SharedDropshipSystem _sharedDropshipSystem = default!;
     [Dependency] private SharedTransformSystem _transform = default!;
@@ -942,10 +943,9 @@ public sealed partial class ThirdPartySystem : EntitySystem
         if (!string.IsNullOrWhiteSpace(party.AnnounceArrival) && party.AnnounceArrivalTitle is { } arrivalTitle)
         {
             var arrival = LocalizeAnnouncement(party.AnnounceArrival);
-            var wrapped = Loc.GetString("cmu-third-party-titled-arrival",
-                ("title", FormattedMessage.EscapeText(Loc.GetString(arrivalTitle))),
-                ("message", FormattedMessage.EscapeText(arrival)));
-            _chatManager.ChatMessageToAll(ChatChannel.Radio, arrival, wrapped, default, false, true, Color.DarkOrange);
+            var title = FormattedMessage.EscapeText(Loc.GetString(arrivalTitle));
+            _announcements.SendChat(Filter.Broadcast(), arrival, heard => Loc.GetString("cmu-third-party-titled-arrival",
+                ("title", title), ("message", FormattedMessage.EscapeText(heard))), color: Color.DarkOrange);
             _sawmill.Info($"[ThirdPartySystem] Announced arrival for third party ({party.ID}): {party.AnnounceArrival}");
         }
         else if (!string.IsNullOrWhiteSpace(party.AnnounceArrival))

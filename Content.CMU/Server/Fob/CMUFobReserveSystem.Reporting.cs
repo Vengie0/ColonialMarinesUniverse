@@ -1,10 +1,8 @@
 using System.Text.Json;
 using System.Linq;
-using Content.Server.CMU14.Platoon;
-using Content.Server.CMU14.Round;
+using Content.Server.CMU14.Chat;
 using Content.Server.GameTicking;
 using Content.Server.Radio.EntitySystems;
-using Content.Shared._RMC14.Language.Prototypes;
 using Content.Shared._RMC14.Marines;
 using Content.Shared.CMU14.Fob;
 using Content.Shared.Popups;
@@ -23,25 +21,11 @@ public sealed partial class CMUFobReserveSystem
     [Dependency] private SharedPopupSystem _popup = default!;
     [Dependency] private RadioSystem _radio = default!;
     [Dependency] private GameTicker _ticker = default!;
-    [Dependency] private PlatoonSpawnRuleSystem _platoons = default!;
+    [Dependency] private CMUApolloAnnouncementSystem _announcements = default!;
 
     private static readonly (int Level, int Bit)[] WarningThresholds = [(120, 1), (60, 2), (0, 4)];
     private static readonly SoundSpecifier ReserveWarning = new SoundPathSpecifier("/Audio/Effects/double_beep.ogg");
     private static readonly ProtoId<RadioChannelPrototype> CommandChannel = "radioGovforCommand";
-
-    // with no language the radio falls back to the network entity's, which is English. a platoon that
-    // doesn't speak English couldn't read its own FOB reports
-    private ProtoId<LanguagePrototype>? GetReportLanguage(Entity<CMUFobNetworkComponent> network)
-    {
-        var platoon = network.Comp.Faction switch
-        {
-            "govfor" => _platoons.SelectedGovforPlatoon,
-            "opfor" => _platoons.SelectedOpforPlatoon,
-            _ => null,
-        };
-
-        return platoon == null ? null : PlatoonLanguageSystem.GetDefaultLanguage(platoon);
-    }
 
     /// <summary>The terminal and radio use the same named world-tile coordinates.</summary>
     public string GetRelayLocation(EntityUid? uid)
@@ -61,7 +45,7 @@ public sealed partial class CMUFobReserveSystem
         var message = Loc.GetString("cmu-fob-relay-announcement",
             ("first", GetRelayLocation(first)), ("second", GetRelayLocation(second)));
         // Only a successful offer calls this; ordinary comms rules apply without retrying blocked messages.
-        _radio.SendRadioMessage(network, message, CommandChannel, network, GetReportLanguage(network));
+        _radio.SendRadioMessage(network, message, CommandChannel, network, _announcements.ColonyLanguage);
     }
 
     private void BeginTrial(Entity<CMUFobNetworkComponent> network, EntityUid site, string? siteId)
@@ -72,7 +56,7 @@ public sealed partial class CMUFobReserveSystem
         trial.NextSummaryAt = _timing.CurTime + TimeSpan.FromMinutes(1);
         TrialLog(network, "created");
         if (network.Comp.Faction == "govfor")
-            _radio.SendRadioMessage(network, Loc.GetString("cmu-fob-trial-announcement"), CommandChannel, network, GetReportLanguage(network));
+            _radio.SendRadioMessage(network, Loc.GetString("cmu-fob-trial-announcement"), CommandChannel, network, _announcements.ColonyLanguage);
     }
 
     // Account to the actual deadline, not the frame that notices it. Pausable timestamps exclude pauses.
@@ -127,7 +111,7 @@ public sealed partial class CMUFobReserveSystem
         _popup.PopupEntity(message, network, localMarines, true, PopupType.MediumCaution);
         // Normal tower/range/jamming checks apply. Never add the clear-transmission exemption.
         if (network.Comp.Faction == "govfor")
-            _radio.SendRadioMessage(network, message, CommandChannel, network, GetReportLanguage(network));
+            _radio.SendRadioMessage(network, message, CommandChannel, network, _announcements.ColonyLanguage);
         var ev = new CMUFobWarningEvent(crossed);
         RaiseLocalEvent(network, ref ev);
         TrialLog(network, "warning", crossed);

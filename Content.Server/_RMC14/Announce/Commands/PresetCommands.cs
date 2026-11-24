@@ -72,7 +72,7 @@ public sealed class AnnouncePresetCommand : IConsoleCommand
             request.Target = target;
         }
 
-        announceSystem.AnnounceAdvanced(request);
+        announceSystem.AnnounceAdvanced(request, useColonyLanguage: false); // CMU14
         shell.WriteLine($"Sent announcement preset '{presetId}': {message}");
     }
 

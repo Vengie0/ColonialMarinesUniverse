@@ -1,5 +1,4 @@
 using Content.Server.CMU14.Chat; // CMU14
-using Content.Server.Chat.Systems;
 using Content.Server.Radio.EntitySystems;
 using Content.Shared.CMU14;
 using Content.Shared.Audio;
@@ -12,8 +11,6 @@ public sealed partial class ColonyCommsConsoleSystem : EntitySystem
     [Dependency] private CMUApolloAnnouncementSystem _apollo = default!;
     [Dependency] private RadioSystem _radioSystem = default!;
     [Dependency] private SharedAmbientSoundSystem _ambientSound = default!;
-    [Dependency] private IEntityManager _entityManager = default!;
-    [Dependency] private ChatSystem _chatSystem = default!;
 
     public override void Initialize()
     {
@@ -34,20 +31,12 @@ public sealed partial class ColonyCommsConsoleSystem : EntitySystem
         BroadcastColonyAlert(uid, args.Message);
     }
 
-    public void BroadcastColonyAlert(EntityUid source, string message, bool apollo = false)
+    public void BroadcastColonyAlert(EntityUid source, string message)
     {
         var sender = Loc.GetString("colony-comms-console-announcement-title");
         var sound = new SoundPathSpecifier("/Audio/Announcements/announce.ogg");
-        if (apollo)
-        {
-            _radioSystem.SendRadioMessage(source, message, "colonyAlert", source, _apollo.BroadcastLanguage(source, "colony"));
-            _apollo.AnnounceColony(message, sender, sound, source);
-            return;
-        }
-
-        _radioSystem.SendRadioMessage(source, message, "colonyAlert", source);
-        _chatSystem.DispatchFilteredAnnouncement(ColonyAnnouncements.Recipients(_entityManager), message, source,
-            sender, playSound: true, announcementSound: sound);
+        _radioSystem.SendRadioMessage(source, message, "colonyAlert", source, _apollo.ColonyLanguage);
+        _apollo.AnnounceColony(message, sender, sound, source);
     }
 
     private void OnSendMessageBuiMsg(EntityUid uid, ColonyCommsConsoleComponent component, ColonyCommsConsoleSendMessageBuiMsg args)

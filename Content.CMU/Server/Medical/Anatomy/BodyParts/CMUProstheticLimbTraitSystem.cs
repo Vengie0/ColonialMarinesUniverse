@@ -30,6 +30,9 @@ public sealed partial class CMUProstheticLimbTraitSystem : EntitySystem
 
     private readonly Dictionary<EntityUid, ProstheticLimbFlags> _queued = new();
     private readonly List<(EntityUid Body, ProstheticLimbFlags Limbs)> _toApply = new();
+    private EntityUid? _detachingLegForReplacement;
+
+    internal bool IsDetachingLegForReplacement(EntityUid body) => _detachingLegForReplacement == body;
 
     public override void Initialize()
     {
@@ -195,7 +198,8 @@ public sealed partial class CMUProstheticLimbTraitSystem : EntitySystem
             return;
         }
 
-        if (_detachableOrgan.Detach(currentPart) is not { } detachedBody)
+        var carrier = DetachForReplacement(body, currentPart, type);
+        if (carrier is not { } detachedBody)
         {
             QueueDeleteLimb(replacement);
             return;
@@ -214,6 +218,22 @@ public sealed partial class CMUProstheticLimbTraitSystem : EntitySystem
         // replacement failed. A successful rollback empties the carrier.
         if (_body.AttachPart(parentSlot.Parent, parentSlot.Slot, currentPart))
             QueueDel(detachedBody);
+    }
+
+    private EntityUid? DetachForReplacement(EntityUid body, EntityUid part, BodyPartType type)
+    {
+        if (type != BodyPartType.Leg)
+            return _detachableOrgan.Detach(part);
+
+        _detachingLegForReplacement = body;
+        try
+        {
+            return _detachableOrgan.Detach(part);
+        }
+        finally
+        {
+            _detachingLegForReplacement = null;
+        }
     }
 
     private void QueueDeleteLimb(EntityUid root)

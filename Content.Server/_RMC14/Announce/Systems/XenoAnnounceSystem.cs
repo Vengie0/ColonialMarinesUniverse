@@ -64,7 +64,7 @@ public sealed partial class XenoAnnounceSystem : SharedXenoAnnounceSystem
                 ShowSprite = false,
             };
 
-            _generalAnnounce.AnnounceAdvanced(request, filter);
+            _generalAnnounce.AnnounceAdvanced(request, filter, useColonyLanguage: false); // CMU14
         }
 
         _chat.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, wrapped, source, false, true, null, hidePopup: true, backgroundColorOverride: AnnouncementBackground, accentColorOverride: AnnouncementAccent);

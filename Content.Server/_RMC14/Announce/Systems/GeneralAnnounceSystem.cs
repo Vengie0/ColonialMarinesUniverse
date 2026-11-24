@@ -62,24 +62,25 @@ public sealed partial class GeneralAnnounceSystem : EntitySystem
         AnnounceAdvanced(request);
     }
 
-    public void AnnounceAdvanced(AnnouncementRequest request)
+    public void AnnounceAdvanced(AnnouncementRequest request, bool useColonyLanguage = true) // CMU14
     {
         if (_net.IsClient || !ValidateRequest(request) || !TryResolvePreset(request.Preset, out var preset))
             return;
 
         var filter = _targetFilter.Build(request.Target);
-        AnnounceAdvanced(request, preset, filter);
+        AnnounceAdvanced(request, preset, filter, useColonyLanguage); // CMU14
     }
 
-    public void AnnounceAdvanced(AnnouncementRequest request, Filter filter)
+    public void AnnounceAdvanced(AnnouncementRequest request, Filter filter, bool useColonyLanguage = true) // CMU14
     {
         if (_net.IsClient || !ValidateRequest(request) || !TryResolvePreset(request.Preset, out var preset))
             return;
 
-        AnnounceAdvanced(request, preset, filter);
+        AnnounceAdvanced(request, preset, filter, useColonyLanguage); // CMU14
     }
 
-    private void AnnounceAdvanced(AnnouncementRequest request, AnnouncementPresetPrototype preset, Filter filter)
+    private void AnnounceAdvanced(AnnouncementRequest request, AnnouncementPresetPrototype preset, Filter filter,
+        bool useColonyLanguage) // CMU14
     {
         if (filter.Count == 0)
             return;
@@ -96,8 +97,8 @@ public sealed partial class GeneralAnnounceSystem : EntitySystem
             if (!plan.Groups.TryGetValue(preference, out var group))
                 continue;
 
-            // CMU14: APOLLO uses each side's language even when an admin sends the Ares overlay to everyone.
-            if (preset.ID == PresetAres)
+            // CMU14: apply comprehension separately for each overlay recipient.
+            if (useColonyLanguage)
             {
                 foreach (var session in group.Filter.Recipients)
                 {

@@ -2,10 +2,12 @@ using Content.Server.Administration.Logs;
 using Content.Server.Administration.Managers;
 using Content.Server.Chat.Managers;
 using Content.Server.Chat.Systems;
+using Content.Server.CMU14.Chat; // CMU14
 using Content.Server.Power.Components;
 using Content.Shared.CMU14.Yautja;
 using Content.Server._RMC14.Language.Systems;
 using Content.Shared._RMC14.Chat;
+using Content.Shared._RMC14.Language.Components; // CMU14
 using Content.Shared._RMC14.Language.Prototypes;
 using Content.Shared._RMC14.Marines;
 using Content.Shared._RMC14.Marines.Squads;
@@ -39,6 +41,7 @@ public sealed partial class RadioSystem : SharedRadioSystem
     [Dependency] private IReplayRecordingManager _replay = default!;
     [Dependency] private IAdminLogManager _adminLogger = default!;
     [Dependency] private IAdminManager _admin = default!; // CMU14
+    [Dependency] private CMUApolloAnnouncementSystem _announcements = default!; // CMU14
     [Dependency] private IPrototypeManager _prototype = default!;
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private ChatSystem _chat = default!;
@@ -134,6 +137,10 @@ public sealed partial class RadioSystem : SharedRadioSystem
         // TODO if radios ever garble / modify messages, feedback-prevention needs to be handled better than this.
         if (!_messages.Add(message))
             return;
+
+        // CMU14: machines without a speech language announce in the colony's language.
+        if (language == null && !HasComp<LanguageComponent>(messageSource))
+            language = _announcements.ColonyLanguage;
 
         // RMC14
         var languageProto = language != null
@@ -262,7 +269,8 @@ public sealed partial class RadioSystem : SharedRadioSystem
                     || unmaskName)) // CMU14
             {
                 actualName = _chat.GetSpeakerNameForListener(messageSource, listenerEntity, name);
-                actualMessage = _language.ObfuscateMessageForListener(listenerEntity.Value, message, currentLanguage, messageSource);
+                actualMessage = _announcements.Obfuscate(listenerEntity.Value, message, currentLanguage,
+                    messageSource, richText: !escapeMarkup); // CMU14
 
                 actualWrappedMessage = Loc.GetString(
                     speech.Bold ? "chat-radio-message-wrap-bold" : "chat-radio-message-wrap",

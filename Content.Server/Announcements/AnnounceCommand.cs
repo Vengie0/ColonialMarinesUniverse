@@ -58,7 +58,7 @@ public sealed partial class AnnounceCommand : LocalizedEntityCommands
         if (args.Length >= 4)
             sound = new SoundPathSpecifier(args[3]);
 
-        _chat.DispatchGlobalAnnouncement(message, sender, true, sound, color);
+        _chat.DispatchGlobalAnnouncement(message, sender, true, sound, color, useColonyLanguage: false); // CMU14
         shell.WriteLine(Loc.GetString("shell-command-success"));
     }
 

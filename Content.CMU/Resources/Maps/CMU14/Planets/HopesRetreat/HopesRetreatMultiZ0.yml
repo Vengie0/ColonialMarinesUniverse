@@ -181063,6 +181063,10 @@ entities:
       isPlaceable: True
   - uid: 50505
     components:
+    - type: StorageFill
+      contents:
+      - id: CMUSpareColonyAdministratorID
+      - id: CMUReplacementColonyIDs
     - type: Transform
       parent: 1
       pos: 74.5,-2.5

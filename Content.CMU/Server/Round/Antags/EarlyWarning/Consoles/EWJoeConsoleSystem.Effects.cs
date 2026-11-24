@@ -120,7 +120,7 @@ public sealed partial class EWJoeConsoleSystem
             return;
 
         var line = Loc.GetString(_random.Pick(SpoofLines));
-        _comms.BroadcastColonyAlert(console, line, apollo: true);
+        _comms.BroadcastColonyAlert(console, line);
     }
 
     /// <summary>Colony-wide announcement (everyone but Threat/Xeno/Yautja) naming the console and its area.</summary>

@@ -243,6 +243,7 @@
     accessList:
     - CMAccessColonyPublic
     - CMAccessColonyLogistics
+    - CMUAccessColonyASRS
     - CMAccessColonyEngineering
     - CMAccessColonyResearch
     - CMAccessColonyBrig

@@ -1,7 +1,6 @@
 using Content.Server._RMC14.Rules;
 using Content.Server._RMC14.Announce;
 using Content.Server.Administration.Logs;
-using Content.Server.Chat.Managers;
 using Content.Server.CMU14.Chat; // CMU14
 using Content.Server.Radio.EntitySystems;
 using Content.Shared._RMC14.AlertLevel;
@@ -9,13 +8,11 @@ using Content.Shared._RMC14.Announce;
 using Content.Shared._RMC14.ARES;
 using Content.Shared._RMC14.ARES.Logs;
 using Content.Shared._RMC14.Dropship;
-using Content.Shared._RMC14.Language.Prototypes; // CMU14
 using Content.Shared._RMC14.Marines;
 using Content.Shared._RMC14.Marines.Announce;
 using Content.Shared._RMC14.Marines.Squads;
 using Content.Shared._RMC14.Rules;
 using Content.Shared._RMC14.Survivor;
-using Content.Shared.Chat;
 using Content.Shared.Database;
 using Content.Shared.Ghost.Components;
 using Content.Shared.Radio;
@@ -32,7 +29,6 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 {
     [Dependency] private IAdminLogManager _adminLogs = default!;
     [Dependency] private AudioSystem _audio = default!;
-    [Dependency] private IChatManager _chatManager = default!;
     [Dependency] private ARESCoreSystem _core = default!;
     [Dependency] private CMDistressSignalRuleSystem _distressSignal = default!;
     [Dependency] private SharedDropshipSystem _dropship = default!;
@@ -151,7 +147,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
         if (excludeSurvivors)
             filter.RemoveWhereAttachedEntity(HasComp<RMCSurvivorComponent>);
 
-        _chatManager.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, message, default, false, true, null);
+        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
         _audio.PlayGlobal(sound ?? DefaultAnnouncementSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -169,20 +165,8 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
         string message,
         ProtoId<RadioChannelPrototype> channel)
     {
-        AnnounceApolloRadio(sender, message, channel, null); // CMU14
-    }
-
-    // CMU14: legacy marine radio channels carry no faction, so presence notices can supply the crew's side.
-    public void AnnounceApolloRadio(EntityUid sender, string message, ProtoId<RadioChannelPrototype> channel, string? faction)
-    {
         _adminLogs.Add(LogType.RMCMarineAnnounce, $"{ToPrettyString(sender):source} marine announced radio message: {message}");
-        // CMU14: resolve the language per transmission because both militaries may share the core.
-        var radioChannel = ProtoMan.Index(channel);
-        ProtoId<LanguagePrototype>? language = null;
-        if (HasComp<ARESCoreComponent>(sender))
-            language = _apollo.RadioLanguage(radioChannel, faction);
-
-        _radio.SendRadioMessage(sender, message, radioChannel, sender, language);
+        _radio.SendRadioMessage(sender, message, channel, sender, _apollo.ColonyLanguage); // CMU14
     }
 
     public override void AnnounceARESStaging(
@@ -201,7 +185,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         // CMU14: format the APOLLO header after applying listener comprehension.
         filter.RemoveWhereAttachedEntity(HasComp<RMCSurvivorComponent>);
-        _apollo.SendChat(filter, message, heard => FormatARESStaging(announcement, heard, ship), faction);
+        _apollo.SendChat(filter, message, heard => FormatARESStaging(announcement, heard, ship));
         _audio.PlayGlobal(sound ?? DefaultAnnouncementSound, filter, true, AudioParams.Default.WithVolume(-2f));
         // CMU14 end
         _adminLogs.Add(LogType.RMCMarineAnnounce, $"{ToPrettyString(source):player} ARES announced message: {message}");
@@ -213,7 +197,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         var filter = Filter.Empty().AddWhereAttachedEntity(e => _squad.IsInSquad(e, squad));
 
-        _chatManager.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, message, default, false, true, null);
+        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
         _audio.PlayGlobal(sound ?? DefaultSquadSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -223,7 +207,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         var filter = Filter.Empty().AddWhereAttachedEntity(e => _squad.IsInSquad(e, squad));
 
-        _chatManager.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, message, default, false, true, null);
+        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
         _audio.PlayGlobal(sound ?? DefaultSquadSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -231,8 +215,8 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
     {
         base.AnnounceSingle(message, receiver, sound);
 
-        if (TryComp(receiver, out ActorComponent? actor))
-            _chatManager.ChatMessageToOne(ChatChannel.Radio, message, message, default, false, actor.PlayerSession.Channel);
+        _apollo.SendChat(Filter.Empty().AddWhereAttachedEntity(entity => entity == receiver),
+            message, heard => heard, richText: true, recordReplay: false); // CMU14
 
         _audio.PlayEntity(sound, receiver, receiver, AudioParams.Default.WithVolume(-2f));
     }

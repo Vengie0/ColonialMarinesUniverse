@@ -76,3 +76,8 @@
 - type: accessLevel
   id: AU14AccessOrbitalLaw
   name: au14-job-name-orbitallawyer
+
+- type: accessLevel
+  id: CMUAccessColonyASRS
+  name: cmu-id-access-colony-asrs
+  accessGroup: Colony Access
