@@ -29,7 +29,7 @@ public sealed class CMUApolloAnnouncementTest : GameTest
     private static readonly ProtoId<PlatoonPrototype> OpforPlatoon = "LACN";
 
     [Test]
-    public async Task BroadcastsAndRadioUseTheColonyLanguageAcrossFactions()
+    public async Task PlatoonAnnouncesInItsOwnLanguageAndColonyAnnouncesInColonyLanguage()
     {
         const string message = "Priority orders received.";
         var map = await Pair.CreateTestMap();
@@ -69,18 +69,17 @@ public sealed class CMUApolloAnnouncementTest : GameTest
             {
                 var announce = Server.System<MarineAnnounceSystem>();
                 announce.AnnounceARES(core, message, faction: "opfor"); // Outside the audience.
-                announce.AnnounceARES(core, message); // GOVFOR receives the colony's Mandarin.
+                announce.AnnounceARES(core, message); // GOVFOR hears Mandarin.
                 SEntMan.GetComponent<MarineComponent>(listener).Faction = "opfor";
+                announce.AnnounceARES(core, message); // Same broadcast on the OPFOR feed.
                 var apollo = Server.System<CMUApolloAnnouncementSystem>();
-                var languages = Server.System<LanguageSystem>();
-                languages.SetExclusiveLanguage(listener, "Portuguese");
-                announce.AnnounceARES(core, message); // OPFOR receives Mandarin as well.
-                var overlay = apollo.OverlayLines(listener, [$"[bold]{message}[/bold]"], core);
+                var overlay = apollo.OverlayLines(listener, [$"[bold]{message}[/bold]"], core, usePlatoonLanguage: true);
                 Assert.That(overlay[0], Does.StartWith("[bold]").And.EndWith("[/bold]").And.Not.Contain(message));
-                announce.AnnounceRadio(core, message, "radioOpforCommand");
-                languages.SetExclusiveLanguage(listener, "Mandarin");
+                var colonyOverlay = apollo.OverlayLines(listener, [$"[bold]{message}[/bold]"], core);
+                Assert.That(colonyOverlay[0], Is.EqualTo($"[bold]{message}[/bold]"));
                 apollo.AnnounceColony(message, "APOLLO",
                     new SoundPathSpecifier("/Audio/Announcements/announce.ogg"));
+                announce.AnnounceRadio(core, message, "radioOpforCommand");
             });
             await Pair.RunTicksSync(5);
 
@@ -89,13 +88,13 @@ public sealed class CMUApolloAnnouncementTest : GameTest
                 Assert.That(heard, Has.Count.EqualTo(4));
                 Assert.That(heard[0].LanguageIcon, Is.EqualTo("Mandarin"));
                 Assert.That(heard[0].Message, Is.EqualTo(message));
-                Assert.That(heard[1].LanguageIcon, Is.EqualTo("Mandarin"));
+                Assert.That(heard[1].LanguageIcon, Is.EqualTo("Portuguese"));
                 Assert.That(heard[1].Message, Is.Not.EqualTo(message));
                 Assert.That(heard[1].WrappedMessage, Does.Not.Contain(message));
                 Assert.That(heard[2].LanguageIcon, Is.EqualTo("Mandarin"));
-                Assert.That(heard[2].WrappedMessage, Does.Not.Contain(message));
-                Assert.That(heard[3].LanguageIcon, Is.EqualTo("Mandarin"));
-                Assert.That(heard[3].Message, Is.EqualTo(message));
+                Assert.That(heard[2].Message, Is.EqualTo(message));
+                Assert.That(heard[3].LanguageIcon, Is.EqualTo("Portuguese"));
+                Assert.That(heard[3].WrappedMessage, Does.Not.Contain(message));
             });
         }
         finally

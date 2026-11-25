@@ -34,6 +34,22 @@ public sealed partial class CMUProstheticLimbTraitSystem : EntitySystem
 
     internal bool IsDetachingLegForReplacement(EntityUid body) => _detachingLegForReplacement == body;
 
+    internal EntProtoId? GetMissingLegPartPrototype(EntityUid body, ProtoId<OrganCategoryPrototype> category,
+        IReadOnlyDictionary<ProtoId<OrganCategoryPrototype>, EntityUid> existingParts)
+    {
+        return category.Id switch
+        {
+            "LegLeft" when HasComp<CMUProstheticLeftLegComponent>(body) || HasRoboticPart("FootLeft") => LeftLegPrototype,
+            "LegRight" when HasComp<CMUProstheticRightLegComponent>(body) || HasRoboticPart("FootRight") => RightLegPrototype,
+            "FootLeft" when HasComp<CMUProstheticLeftLegComponent>(body) || HasRoboticPart("LegLeft") => LeftFootPrototype,
+            "FootRight" when HasComp<CMUProstheticRightLegComponent>(body) || HasRoboticPart("LegRight") => RightFootPrototype,
+            _ => (EntProtoId?) null,
+        };
+
+        bool HasRoboticPart(ProtoId<OrganCategoryPrototype> partCategory)
+            => existingParts.TryGetValue(partCategory, out var part) && HasComp<CMURoboticLimbComponent>(part);
+    }
+
     public override void Initialize()
     {
         base.Initialize();

@@ -3,6 +3,7 @@
   tags:
   - CMAccessColonyPublic # any public doors that would be locked for outsiders but not your common civilian
   - CMAccessColonyLogistics # colony cargo
+  - CMUAccessColonyASRS
   - CMAccessColonyEngineering # colony engineering
   - CMAccessColonyResearch # colony research
   - CMAccessColonyBrig # colony general security
@@ -21,6 +22,7 @@
   tags:
   - CMAccessColonyPublic
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: ColonyCorrespondent
@@ -32,6 +34,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessColonyMedbay
   - CMAccessColonyCommand
@@ -50,6 +53,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: ColonistSec
@@ -57,6 +61,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: ColonistCMBSurvivor
@@ -65,6 +70,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessColonyMedbay
   - CMAccessColonyCommand
@@ -82,6 +88,7 @@
   tags:
   - CMAccessColonyPublic
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - AU14AccessCorporateWEYU # TODO RMC14 weya colonial, weya exec
 
 - type: accessGroup
@@ -92,6 +99,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessColonyMedbay
   - CMAccessColonyCommand
@@ -103,6 +111,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessColonyMedbay
   - CMAccessColonyCommand
@@ -113,6 +122,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - RMCAccessTSEPA
 
 - type: accessGroup
@@ -121,6 +131,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - RMCAccessTSEPA
   - RMCAccessTSEPABrig
 
@@ -130,6 +141,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - RMCAccessTSEPA
   - RMCAccessTSEPABrig
   - RMCAccessTSEPAInspector

@@ -9,6 +9,7 @@
   - CMAccessColonyPublic
   - AU14AccessCorporateWEYUFlight
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   special:
   - !type:AddComponentSpecial
     components:

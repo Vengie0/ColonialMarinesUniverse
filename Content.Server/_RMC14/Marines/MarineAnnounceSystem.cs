@@ -8,6 +8,7 @@ using Content.Shared._RMC14.Announce;
 using Content.Shared._RMC14.ARES;
 using Content.Shared._RMC14.ARES.Logs;
 using Content.Shared._RMC14.Dropship;
+using Content.Shared._RMC14.Language.Prototypes; // CMU14
 using Content.Shared._RMC14.Marines;
 using Content.Shared._RMC14.Marines.Announce;
 using Content.Shared._RMC14.Marines.Squads;
@@ -147,7 +148,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
         if (excludeSurvivors)
             filter.RemoveWhereAttachedEntity(HasComp<RMCSurvivorComponent>);
 
-        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
+        _apollo.SendChat(filter, message, heard => heard, richText: true, usePlatoonLanguage: true, faction: faction); // CMU14
         _audio.PlayGlobal(sound ?? DefaultAnnouncementSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -165,8 +166,20 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
         string message,
         ProtoId<RadioChannelPrototype> channel)
     {
+        AnnounceApolloRadio(sender, message, channel, null); // CMU14
+    }
+
+    // CMU14: legacy marine radio channels carry no faction, so presence notices can supply the crew's side.
+    public void AnnounceApolloRadio(EntityUid sender, string message, ProtoId<RadioChannelPrototype> channel, string? faction)
+    {
         _adminLogs.Add(LogType.RMCMarineAnnounce, $"{ToPrettyString(sender):source} marine announced radio message: {message}");
-        _radio.SendRadioMessage(sender, message, channel, sender, _apollo.ColonyLanguage); // CMU14
+        // CMU14: resolve the language per transmission because both militaries may share the core.
+        var radioChannel = ProtoMan.Index(channel);
+        ProtoId<LanguagePrototype>? language = null;
+        if (HasComp<ARESCoreComponent>(sender))
+            language = _apollo.RadioLanguage(radioChannel, faction);
+
+        _radio.SendRadioMessage(sender, message, radioChannel, sender, language);
     }
 
     public override void AnnounceARESStaging(
@@ -185,7 +198,8 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         // CMU14: format the APOLLO header after applying listener comprehension.
         filter.RemoveWhereAttachedEntity(HasComp<RMCSurvivorComponent>);
-        _apollo.SendChat(filter, message, heard => FormatARESStaging(announcement, heard, ship));
+        _apollo.SendChat(filter, message, heard => FormatARESStaging(announcement, heard, ship),
+            usePlatoonLanguage: true, faction: faction);
         _audio.PlayGlobal(sound ?? DefaultAnnouncementSound, filter, true, AudioParams.Default.WithVolume(-2f));
         // CMU14 end
         _adminLogs.Add(LogType.RMCMarineAnnounce, $"{ToPrettyString(source):player} ARES announced message: {message}");
@@ -197,7 +211,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         var filter = Filter.Empty().AddWhereAttachedEntity(e => _squad.IsInSquad(e, squad));
 
-        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
+        _apollo.SendChat(filter, message, heard => heard, richText: true, usePlatoonLanguage: true); // CMU14
         _audio.PlayGlobal(sound ?? DefaultSquadSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -207,7 +221,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
 
         var filter = Filter.Empty().AddWhereAttachedEntity(e => _squad.IsInSquad(e, squad));
 
-        _apollo.SendChat(filter, message, heard => heard, richText: true); // CMU14
+        _apollo.SendChat(filter, message, heard => heard, richText: true, usePlatoonLanguage: true); // CMU14
         _audio.PlayGlobal(sound ?? DefaultSquadSound, filter, true, AudioParams.Default.WithVolume(-2f));
     }
 
@@ -216,7 +230,7 @@ public sealed partial class MarineAnnounceSystem : SharedMarineAnnounceSystem
         base.AnnounceSingle(message, receiver, sound);
 
         _apollo.SendChat(Filter.Empty().AddWhereAttachedEntity(entity => entity == receiver),
-            message, heard => heard, richText: true, recordReplay: false); // CMU14
+            message, heard => heard, richText: true, recordReplay: false, usePlatoonLanguage: true); // CMU14
 
         _audio.PlayEntity(sound, receiver, receiver, AudioParams.Default.WithVolume(-2f));
     }

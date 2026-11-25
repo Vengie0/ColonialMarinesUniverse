@@ -7,6 +7,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessRequisitions
   - CMAccessColonyMedbay
@@ -27,6 +28,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: aucmb
@@ -34,6 +36,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - CMAccessColonyEngineering
   - CMAccessColonyMedbay
   - CMAccessColonyArmory

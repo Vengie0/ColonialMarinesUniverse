@@ -326,8 +326,10 @@
         ent: null
         showEnts: False
         occludes: True
+  - type: ActivatableUIRequiresAccess
+    requiredIdAccess: CMUAccessColonyASRS
   - type: AccessReader
-    access: [ [ "CMAccessRequisitions" ], [ "CMAccessColonyCommand" ], [ "CMUAccessColonyASRS" ] ] # CMU14: grantable colony-only ASRS access
+    access: [ [ "CMUAccessColonyASRS" ] ]
   - type: RequisitionsComputer
     faction: colony
 

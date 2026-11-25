@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Content.Server.CMU14.Medical.Anatomy.BodyParts;
 using Content.Shared.CMU14.Medical.Core;
 using Content.Shared.CMU14.Medical.Anatomy.BodyParts;
 using Content.Shared.CMU14.Medical.Anatomy.Bones;
@@ -37,6 +38,7 @@ public sealed partial class CMUMedicalRejuvenateSystem : EntitySystem
     [Dependency] private SharedOrganHealthSystem _organHealth = default!;
     [Dependency] private SharedBodyPartHealthSystem _partHealth = default!;
     [Dependency] private SharedPainShockSystem _pain = default!;
+    [Dependency] private CMUProstheticLimbTraitSystem _prosthetics = default!;
     [Dependency] private OrganRelationSystem _organRelations = default!;
     [Dependency] private StatusEffectsSystem _status = default!;
     [Dependency] private SharedCMUSurgeryFlowSystem _surgery = default!;
@@ -137,7 +139,8 @@ public sealed partial class CMUMedicalRejuvenateSystem : EntitySystem
             if (organsByCategory.ContainsKey(category))
                 continue;
 
-            var organUid = Spawn(prototype, new EntityCoordinates(body, default));
+            var restoredPrototype = _prosthetics.GetMissingLegPartPrototype(body, category, organsByCategory) ?? prototype;
+            var organUid = Spawn(restoredPrototype, new EntityCoordinates(body, default));
             if (!_containers.Insert(organUid, container))
             {
                 QueueDel(organUid);

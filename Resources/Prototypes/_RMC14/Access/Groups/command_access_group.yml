@@ -32,6 +32,7 @@
   - CMAccessPress # correspondent access
   - CMAccessQM # Logistics Officer
   - CMAccessRequisitions # (cargo)
+  - CMUAccessColonyASRS
   - CMAccessResearch # research access
   - CMAccessSEA # senior enlisted
   - RMCAccessVehicleCrew # vehicle bay
@@ -92,6 +93,7 @@
   - CMAccessPress # correspondent access
   - CMAccessQM # Logistics Officer
   - CMAccessRequisitions # (cargo)
+  - CMUAccessColonyASRS
   - CMAccessResearch # research access
   - CMAccessSEA # senior enlisted
   - RMCAccessVehicleCrew # vehicle bay
@@ -142,6 +144,7 @@
   - CMAccessPress
   - CMAccessQM
   - CMAccessRequisitions
+  - CMUAccessColonyASRS
   - CMAccessResearch
   - CMAccessSEA
   - RMCAccessVehicleCrew
@@ -186,6 +189,7 @@
   - CMAccessPress
   - CMAccessQM
   - CMAccessRequisitions
+  - CMUAccessColonyASRS
   - CMAccessResearch
   - CMAccessSEA
   - CMAccessSmartPrep

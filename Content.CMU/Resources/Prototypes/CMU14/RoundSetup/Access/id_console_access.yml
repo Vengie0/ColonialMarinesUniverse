@@ -352,6 +352,7 @@
   - CMAccessColonyResearch
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
   - CMAccessColonyBrig
   - CMAccessRequisitions
   - CMAccessColonyMedbay
@@ -376,6 +377,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyEngineering
   - CMAccessColonyLogistics
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: CMUIdJobColonyCmb
@@ -385,6 +387,7 @@
   - CMAccessColonyPublic
   - CMAccessColonyBrig
   - CMAccessColonyCommand
+  - CMUAccessColonyASRS
   - CMAccessColonyEngineering
   - CMAccessColonyMedbay
   - CMAccessColonyArmory

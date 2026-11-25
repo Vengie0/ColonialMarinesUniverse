@@ -39,6 +39,7 @@
   - CMAccessPilot
   - CMAccessCrewman
   - CMAccessRequisitions
+  - CMUAccessColonyASRS
   - RMCAccessVehicleCrew
 
 - type: accessGroup

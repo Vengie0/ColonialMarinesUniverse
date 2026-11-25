@@ -4,6 +4,7 @@
   name: Logistics Officer
   tags:
   - CMAccessRequisitions
+  - CMUAccessColonyASRS
   - CMAccessQM
   - RMCAccessCommand
   - CMAccessAlpha
@@ -20,6 +21,7 @@
   name: Requisitions Technician
   tags:
   - CMAccessRequisitions
+  - CMUAccessColonyASRS
 
 - type: accessGroup
   id: MessTech

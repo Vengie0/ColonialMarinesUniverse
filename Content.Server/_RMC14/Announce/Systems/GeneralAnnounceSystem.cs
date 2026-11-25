@@ -62,25 +62,25 @@ public sealed partial class GeneralAnnounceSystem : EntitySystem
         AnnounceAdvanced(request);
     }
 
-    public void AnnounceAdvanced(AnnouncementRequest request, bool useColonyLanguage = true) // CMU14
+    public void AnnounceAdvanced(AnnouncementRequest request, bool applyLanguage = true) // CMU14
     {
         if (_net.IsClient || !ValidateRequest(request) || !TryResolvePreset(request.Preset, out var preset))
             return;
 
         var filter = _targetFilter.Build(request.Target);
-        AnnounceAdvanced(request, preset, filter, useColonyLanguage); // CMU14
+        AnnounceAdvanced(request, preset, filter, applyLanguage); // CMU14
     }
 
-    public void AnnounceAdvanced(AnnouncementRequest request, Filter filter, bool useColonyLanguage = true) // CMU14
+    public void AnnounceAdvanced(AnnouncementRequest request, Filter filter, bool applyLanguage = true) // CMU14
     {
         if (_net.IsClient || !ValidateRequest(request) || !TryResolvePreset(request.Preset, out var preset))
             return;
 
-        AnnounceAdvanced(request, preset, filter, useColonyLanguage); // CMU14
+        AnnounceAdvanced(request, preset, filter, applyLanguage); // CMU14
     }
 
     private void AnnounceAdvanced(AnnouncementRequest request, AnnouncementPresetPrototype preset, Filter filter,
-        bool useColonyLanguage) // CMU14
+        bool applyLanguage) // CMU14
     {
         if (filter.Count == 0)
             return;
@@ -98,11 +98,12 @@ public sealed partial class GeneralAnnounceSystem : EntitySystem
                 continue;
 
             // CMU14: apply comprehension separately for each overlay recipient.
-            if (useColonyLanguage)
+            if (applyLanguage)
             {
+                var usePlatoonLanguage = preset.ID is PresetAres or PresetMarineCommand or "MarineOverwatch";
                 foreach (var session in group.Filter.Recipients)
                 {
-                    var lines = _apollo.OverlayLines(session.AttachedEntity, plan.Lines, request.Source);
+                    var lines = _apollo.OverlayLines(session.AttachedEntity, plan.Lines, request.Source, usePlatoonLanguage);
                     var data = BuildClientData(request, group.Preset, group.Style, lines, plan.SpeakerName);
                     RaiseNetworkEvent(new AnnouncementNetMessage(data), session);
                 }

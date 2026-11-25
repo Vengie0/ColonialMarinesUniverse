@@ -84221,10 +84221,6 @@ entities:
     - type: Transform
       parent: 1
       pos: 41.5,60.5
-    - type: AccessReader
-      access:
-      - - CMAccessColonyCommand
-      - - CMAccessRequisitions
 - proto: CMAutolathe
   entities:
   - uid: 314

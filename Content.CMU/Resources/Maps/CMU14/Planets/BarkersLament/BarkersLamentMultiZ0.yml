@@ -147493,11 +147493,6 @@ entities:
     - type: Transform
       parent: 1
       pos: 67.5,-19.5
-    - type: AccessReader
-      access:
-      - - CMAccessColonyCommand
-      - - CMAccessColonyLogistics
-      - - CMAccessRequisitions
 - proto: CMAutolathe
   entities:
   - uid: 1370

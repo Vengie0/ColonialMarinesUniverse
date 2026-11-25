@@ -1,6 +1,7 @@
-using Content.Server.CMU14.Chat;
 using Content.Server.CMU14.Radio;
+using Content.Server.CMU14.Round;
 using Content.Server.Radio.EntitySystems;
+using Content.Shared._RMC14.Language.Prototypes;
 using Content.Shared._RMC14.Areas;
 using Content.Shared._RMC14.Dropship.Weapon;
 using Content.Shared._RMC14.Marines;
@@ -26,7 +27,7 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
 {
     [Dependency] private AreaSystem _areas = default!;
     [Dependency] private MobStateSystem _mobState = default!;
-    [Dependency] private CMUApolloAnnouncementSystem _announcements = default!;
+    [Dependency] private PlatoonSpawnRuleSystem _platoons = default!;
     [Dependency] private RadioSystem _radio = default!;
     [Dependency] private RMCPlanetSystem _rmcPlanet = default!;
     [Dependency] private SharedRankSystem _rank = default!;
@@ -47,7 +48,7 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
 
     private void OnFultonDeployed(ref CMUFultonDeployedEvent ev)
     {
-        if (!TryGetJtacChannel(ev.User, out var channel))
+        if (!TryGetJtacChannel(ev.User, out var channel, out var faction))
             return;
 
         var message = Loc.GetString("cmu-dropship-radio-fulton-deployed",
@@ -55,7 +56,7 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
             ("location", DescribeLocation(_transform.ToMapCoordinates(ev.Location))),
             ("seconds", (int) ev.AvailableFor.TotalSeconds));
 
-        SendClear(ev.User, message, channel);
+        SendClear(ev.User, message, channel, faction);
     }
 
     private void OnCasRadio(ref CMUCasRadioEvent ev)
@@ -64,7 +65,7 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
         if (!JtacChannels.TryGetValue(faction, out var channel) || TerminatingOrDeleted(ev.Source))
             return;
 
-        SendClear(ev.Source, ev.Message, channel);
+        SendClear(ev.Source, ev.Message, channel, faction);
     }
 
     private void OnMedevacBeacon(ref CMUMedevacBeaconEvent ev)
@@ -88,7 +89,7 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
         }
 
         var factionSource = ev.User ?? patient;
-        if (factionSource is not { } source || !TryGetJtacChannel(source, out var channel))
+        if (factionSource is not { } source || !TryGetJtacChannel(source, out var channel, out var faction))
             return;
 
         var location = DescribeLocation(_transform.GetMapCoordinates(ev.Stretcher));
@@ -109,19 +110,20 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
                 : Loc.GetString("cmu-dropship-radio-medevac-empty", ("location", location));
         }
 
-        SendClear(ev.Stretcher, message, channel);
+        SendClear(ev.Stretcher, message, channel, faction);
     }
 
     /// <summary>
-    /// Sends an automated call in the colony language that bypasses radio signal restrictions.
+    /// Sends an automated call that no tower, range, jamming or garbling can stop, in the primary language of the
+    /// faction's platoon.
     /// </summary>
-    private void SendClear(EntityUid source, string message, ProtoId<RadioChannelPrototype> channel)
+    private void SendClear(EntityUid source, string message, ProtoId<RadioChannelPrototype> channel, string faction)
     {
         var added = !HasComp<CMUClearRadioTransmissionComponent>(source);
         EnsureComp<CMUClearRadioTransmissionComponent>(source);
         try
         {
-            _radio.SendRadioMessage(source, message, channel, source, _announcements.ColonyLanguage);
+            _radio.SendRadioMessage(source, message, channel, source, GetPlatoonLanguage(faction));
         }
         finally
         {
@@ -151,13 +153,28 @@ public sealed partial class CMUDropshipBeaconRadioSystem : EntitySystem
         return Loc.GetString("cmu-dropship-radio-patient-status", ("state", state));
     }
 
-    private bool TryGetJtacChannel(EntityUid uid, out ProtoId<RadioChannelPrototype> channel)
+    private bool TryGetJtacChannel(EntityUid uid, out ProtoId<RadioChannelPrototype> channel, out string faction)
     {
         channel = default;
+        faction = string.Empty;
         if (!TryComp(uid, out MarineComponent? marine) || marine.Faction is not { } marineFaction)
             return false;
 
-        return JtacChannels.TryGetValue(marineFaction.ToLowerInvariant(), out channel);
+        faction = marineFaction.ToLowerInvariant();
+        return JtacChannels.TryGetValue(faction, out channel);
+    }
+
+    /// <summary>The first language the faction's platoon speaks, or null to fall back to the default.</summary>
+    private ProtoId<LanguagePrototype>? GetPlatoonLanguage(string faction)
+    {
+        var platoon = faction switch
+        {
+            "govfor" => _platoons.SelectedGovforPlatoon,
+            "opfor" => _platoons.SelectedOpforPlatoon,
+            _ => null,
+        };
+
+        return platoon is { Languages.Count: > 0 } ? (ProtoId<LanguagePrototype>?) platoon.Languages[0] : null;
     }
 
     private string DescribeLocation(MapCoordinates coordinates)

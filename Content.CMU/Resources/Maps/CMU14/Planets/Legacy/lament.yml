@@ -151283,11 +151283,6 @@ entities:
     - type: Transform
       pos: 67.5,-19.5
       parent: 1
-    - type: AccessReader
-      access:
-      - - CMAccessColonyCommand
-      - - CMAccessColonyLogistics
-      - - CMAccessRequisitions
     - type: ContainerContainer
       containers:
         board: !type:Container
