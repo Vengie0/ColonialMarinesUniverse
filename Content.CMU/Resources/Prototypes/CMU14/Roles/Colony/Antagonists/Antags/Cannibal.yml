@@ -6,6 +6,10 @@
   - AllOpforCommandStaff
   - AllCLFJobs
 # - AllColonyDepartmentHeadJobs
+  - AllSynthJobs
+  blacklist:
+    components:
+    - Synth
   briefing:
     text: cannibal-role-greeting
     color: DarkRed

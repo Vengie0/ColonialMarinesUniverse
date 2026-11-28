@@ -7,6 +7,9 @@
   - AllCLFJobs
 # - AllColonyDepartmentHeadJobs
   - AllSynthJobs
+  blacklist:
+    components:
+    - Synth
   briefing:
     text: serialkiller-role-greeting
     color: DarkRed
